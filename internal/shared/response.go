@@ -2,7 +2,7 @@ package shared
 
 import "github.com/gofiber/fiber/v2"
 
-type Message struct {
+type Error400 struct {
 	Message string `json:"message"`
 }
 
@@ -21,10 +21,10 @@ func Create200(ctx *fiber.Ctx, body any) error {
 	return ctx.Status(fiber.StatusOK).JSON(body)
 }
 
-func Create400(ctx *fiber.Ctx, message Message) error {
-	return ctx.Status(fiber.StatusBadRequest).JSON(message)
+func Create400(ctx *fiber.Ctx, err *Error400) error {
+	return ctx.Status(fiber.StatusBadRequest).JSON(err)
 }
 
-func Create500(ctx *fiber.Ctx, err Error500) error {
+func Create500(ctx *fiber.Ctx, err *Error500) error {
 	return ctx.Status(fiber.StatusBadRequest).JSON(err)
 }

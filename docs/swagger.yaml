@@ -1,0 +1,202 @@
+basePath: /
+definitions:
+  shared.Error400:
+    properties:
+      message:
+        type: string
+    type: object
+  shared.Error500:
+    properties:
+      message:
+        type: string
+      requestUrl:
+        type: string
+      requestUuid:
+        type: string
+    type: object
+  task.CreateRequest:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
+    type: object
+  task.CreateResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  task.DeleteResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  task.GetAllResponse:
+    properties:
+      tasks:
+        items:
+          $ref: '#/definitions/task.Task'
+        type: array
+    type: object
+  task.GetByIdResponse:
+    properties:
+      task:
+        $ref: '#/definitions/task.Task'
+    type: object
+  task.Status:
+    enum:
+    - new
+    - in_progress
+    - done
+    type: string
+    x-enum-varnames:
+    - New
+    - InProgress
+    - Done
+  task.Task:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      status:
+        $ref: '#/definitions/task.Status'
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  task.UpdateResponse:
+    properties:
+      status:
+        $ref: '#/definitions/task.Status'
+      updatedAt:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Task CRUD
+  title: Homework 4 API
+  version: "1.0"
+paths:
+  /v1/tasks:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/task.GetAllResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/shared.Error400'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/shared.Error500'
+      summary: Get all tasks
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: CreateRequest
+        in: body
+        name: createRequest
+        required: true
+        schema:
+          $ref: '#/definitions/task.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/task.CreateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/shared.Error400'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/shared.Error500'
+      summary: Create a new task with status "new"
+  /v1/tasks/{id}:
+    delete:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/task.DeleteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/shared.Error400'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/shared.Error500'
+      summary: Delete a task by ID
+    get:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/task.GetByIdResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/shared.Error400'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/shared.Error500'
+      summary: Get task by ID
+    put:
+      description: 'Transitions of state machine: new -> in_progress -> done'
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/task.UpdateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/shared.Error400'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/shared.Error500'
+      summary: Moves the task to the next status
+swagger: "2.0"

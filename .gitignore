@@ -156,4 +156,7 @@ fabric.properties
 .history
 .ionide
 
+# .env files
+*.env
+
 # End of https://www.toptal.com/developers/gitignore/api/go,visualstudiocode,goland

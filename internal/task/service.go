@@ -1,17 +1,17 @@
 package task
 
 type Service interface {
-	Create(request CreateRequest) (CreateResponse, error)
-	GetAll() ([]GetResponse, error)
-	GetById(id int) (GetResponse, error)
-	Update(id int) error
-	Delete(id int) error
+	Create(request *CreateRequest) (CreateResponse, error)
+	GetAll() (GetAllResponse, error)
+	GetById(id int) (GetByIdResponse, error)
+	Update(id int) (UpdateResponse, error)
+	Delete(id int) (DeleteResponse, error)
 }
 
 type service struct {
-	repository repository
+	repository Repository
 }
 
 func NewService(repository Repository) Service {
-	return
+	return &service{repository}
 }

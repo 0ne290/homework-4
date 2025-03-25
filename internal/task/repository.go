@@ -1,37 +1,18 @@
 package task
 
 type Repository interface {
-	Create(request CreateRequest) (Task, error)
+	Create(request *CreateRequest) (Task, error)
 	GetAll() ([]Task, error)
 	GetById(id int) (Task, error)
-	Update(id int) error
+	Update(id int) (Task, error)
 	Delete(id int) error
 }
 
 type repository struct {
-	tasks map[int]Task
+	tasks     map[int]Task
+	idCounter int
 }
 
 func NewRepository(tasks map[int]Task) Repository {
-	return &repository{tasks}
-}
-
-func (r *repository) Create(request CreateRequest) (Task, error) {
-
-}
-
-func (r *repository) GetAll() ([]Task, error) {
-
-}
-
-func (r *repository) GetById(id int) (Task, error) {
-
-}
-
-func (r *repository) Update(id int) error {
-
-}
-
-func (r *repository) Delete(id int) error {
-
+	return &repository{tasks, 0}
 }
