@@ -47,11 +47,13 @@ func (s *service) Create(request *CreateRequest) (CreateResponse, error) {
 }
 
 func (r *repository) Create(request *CreateRequest) (Task, error) {
+	r.locker.Lock()
+
 	task := Task{r.idCounter, request.Title, request.Description, New, time.Now(), time.Now()}
-
 	r.tasks[r.idCounter] = task
-
 	r.idCounter++
+
+	r.locker.Unlock()
 
 	return task, nil
 }

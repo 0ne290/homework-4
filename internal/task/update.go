@@ -40,6 +40,8 @@ func (s *service) Update(id int) (UpdateResponse, error) {
 }
 
 func (r *repository) Update(id int) (Task, error) {
+	r.locker.Lock()
+
 	task, ok := r.tasks[id]
 	if !ok {
 		return Task{}, &shared.InvariantViolationError{Message: "task not found"}
@@ -50,6 +52,8 @@ func (r *repository) Update(id int) (Task, error) {
 		return Task{}, err
 	}
 	r.tasks[id] = task
+
+	r.locker.Unlock()
 
 	return task, nil
 }

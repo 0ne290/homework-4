@@ -1,5 +1,7 @@
 package task
 
+import "sync"
+
 type Repository interface {
 	Create(request *CreateRequest) (Task, error)
 	GetAll() ([]Task, error)
@@ -11,8 +13,9 @@ type Repository interface {
 type repository struct {
 	tasks     map[int]Task
 	idCounter int
+	locker    sync.RWMutex
 }
 
 func NewRepository(tasks map[int]Task) Repository {
-	return &repository{tasks, 0}
+	return &repository{tasks: tasks, idCounter: 0}
 }

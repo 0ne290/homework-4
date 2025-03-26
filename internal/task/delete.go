@@ -37,12 +37,16 @@ func (s *service) Delete(id int) (DeleteResponse, error) {
 }
 
 func (r *repository) Delete(id int) error {
+	r.locker.Lock()
+
 	_, ok := r.tasks[id]
 	if !ok {
 		return &shared.InvariantViolationError{Message: "task not found"}
 	}
 
 	delete(r.tasks, id)
+
+	r.locker.Unlock()
 
 	return nil
 }
