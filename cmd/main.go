@@ -39,7 +39,7 @@ func main() {
 
 	controller := task.NewController(service)
 
-	app := BuildRouting(cfg.Rest.ListenAddress, controller, logger)
+	app := BuildRouting("http://"+cfg.Rest.ListenAddress, controller, logger)
 
 	// Запуск HTTP-сервера в отдельной горутине
 	go func() {
@@ -57,7 +57,7 @@ func main() {
 	logger.Info("Shutting down gracefully...")
 }
 
-func BuildRouting(listenAddress string, controller *task.Controller, logger *zap.SugaredLogger) *fiber.App {
+func BuildRouting(allowOrigins string, controller *task.Controller, logger *zap.SugaredLogger) *fiber.App {
 	app := fiber.New()
 
 	app.Get("/swagger/*", swagger.HandlerDefault)
@@ -67,7 +67,7 @@ func BuildRouting(listenAddress string, controller *task.Controller, logger *zap
 		AllowHeaders:     "Accept, Authorization, Content-Type, X-CSRF-Token, X-REQUEST-SomeID",
 		ExposeHeaders:    "Link",
 		AllowCredentials: true,
-		AllowOrigins:     listenAddress,
+		AllowOrigins:     allowOrigins,
 		MaxAge:           300,
 	}))
 
@@ -76,7 +76,7 @@ func BuildRouting(listenAddress string, controller *task.Controller, logger *zap
 
 	taskApiGroup.Post("", middlewares.Logging(logger), controller.Create)
 	taskApiGroup.Get("", middlewares.Logging(logger), controller.GetAll)
-	taskApiGroup.Get("/:id<int>", middlewares.Logging(logger), controller.GetAll)
+	taskApiGroup.Get("/:id<int>", middlewares.Logging(logger), controller.GetById)
 	taskApiGroup.Put("/:id<int>", middlewares.Logging(logger), controller.Update)
 	taskApiGroup.Delete("/:id<int>", middlewares.Logging(logger), controller.Delete)
 

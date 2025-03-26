@@ -14,5 +14,5 @@ RUN go build ./cmd/main.go
 FROM scratch
 WORKDIR /bin
 COPY --from=builder /app/main /bin
-EXPOSE 80
+EXPOSE 8080
 ENTRYPOINT ["/bin/main"]

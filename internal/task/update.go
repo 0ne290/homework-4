@@ -41,6 +41,7 @@ func (s *service) Update(id int) (UpdateResponse, error) {
 
 func (r *repository) Update(id int) (Task, error) {
 	r.locker.Lock()
+	defer r.locker.Unlock()
 
 	task, ok := r.tasks[id]
 	if !ok {
@@ -52,8 +53,6 @@ func (r *repository) Update(id int) (Task, error) {
 		return Task{}, err
 	}
 	r.tasks[id] = task
-
-	r.locker.Unlock()
 
 	return task, nil
 }

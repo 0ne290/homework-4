@@ -36,14 +36,13 @@ func (s *service) GetAll() (GetAllResponse, error) {
 
 func (r *repository) GetAll() ([]Task, error) {
 	r.locker.RLock()
+	defer r.locker.RUnlock()
 
 	ret := make([]Task, 0, len(r.tasks))
 
 	for _, task := range r.tasks {
 		ret = append(ret, task)
 	}
-
-	r.locker.RUnlock()
 
 	return ret, nil
 }
@@ -81,13 +80,12 @@ func (s *service) GetById(id int) (GetByIdResponse, error) {
 
 func (r *repository) GetById(id int) (Task, error) {
 	r.locker.RLock()
+	defer r.locker.RUnlock()
 
 	task, ok := r.tasks[id]
 	if !ok {
 		return Task{}, &shared.InvariantViolationError{Message: "task not found"}
 	}
-
-	r.locker.RUnlock()
 
 	return task, nil
 }

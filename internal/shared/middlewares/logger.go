@@ -10,20 +10,20 @@ import (
 
 func Logging(logger *zap.SugaredLogger) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		requestUrl := ctx.OriginalURL()
+		requestUrl := "[" + ctx.Method() + "] " + ctx.OriginalURL()
 		requestUuid := uuid.New().String()
 
 		logger.Infow("begin", "url", requestUrl, "requestUuid", requestUuid, "requestBody", string(ctx.Request().Body()))
 
-		err := ctx.Next()
-		if err != nil {
-			if errors.As(err, &shared.NilOfInvariantViolationError) {
-				_ = shared.Create400(ctx, &shared.Error400{Message: err.Error()})
+		ret := ctx.Next()
+		if ret != nil {
+			if errors.As(ret, &shared.NilOfInvariantViolationError) {
+				ret = shared.Create400(ctx, &shared.Error400{Message: ret.Error()})
 
 				logger.Infow("end", "requestUuid", requestUuid, "statusCode", 400, "responseBody", string(ctx.Response().Body()))
 			} else {
 				error500 := shared.NewError500(requestUrl, requestUuid)
-				_ = shared.Create500(ctx, &error500)
+				ret = shared.Create500(ctx, &error500)
 
 				logger.Errorw("end", "requestUuid", requestUuid, "statusCode", 500, "responseBody", string(ctx.Response().Body()))
 			}
@@ -31,6 +31,6 @@ func Logging(logger *zap.SugaredLogger) fiber.Handler {
 			logger.Infow("end", "requestUuid", requestUuid, "statusCode", 200, "responseBody", string(ctx.Response().Body()))
 		}
 
-		return nil
+		return ret
 	}
 }

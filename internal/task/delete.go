@@ -38,6 +38,7 @@ func (s *service) Delete(id int) (DeleteResponse, error) {
 
 func (r *repository) Delete(id int) error {
 	r.locker.Lock()
+	defer r.locker.Unlock()
 
 	_, ok := r.tasks[id]
 	if !ok {
@@ -45,8 +46,6 @@ func (r *repository) Delete(id int) error {
 	}
 
 	delete(r.tasks, id)
-
-	r.locker.Unlock()
 
 	return nil
 }

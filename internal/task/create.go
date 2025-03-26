@@ -25,8 +25,9 @@ type CreateResponse struct {
 // @Router /v1/tasks [post]
 func (c *Controller) Create(ctx *fiber.Ctx) error {
 	request := &CreateRequest{}
-	if err := ctx.BodyParser(request); err != nil {
-		return &shared.InvariantViolationError{Message: "invalid request body format"}
+	err := ctx.BodyParser(request)
+	if err != nil {
+		return err
 	}
 
 	response, err := c.Service.Create(request)
@@ -48,12 +49,11 @@ func (s *service) Create(request *CreateRequest) (CreateResponse, error) {
 
 func (r *repository) Create(request *CreateRequest) (Task, error) {
 	r.locker.Lock()
+	defer r.locker.Unlock()
 
 	task := Task{r.idCounter, request.Title, request.Description, New, time.Now(), time.Now()}
 	r.tasks[r.idCounter] = task
 	r.idCounter++
-
-	r.locker.Unlock()
 
 	return task, nil
 }
