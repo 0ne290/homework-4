@@ -2,7 +2,7 @@ package task
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"homework-4/internal/shared"
+	"homework-4/internal"
 	"time"
 )
 
@@ -27,10 +27,10 @@ func (c *Controller) Update(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return shared.Create200(ctx, response)
+	return internal.Create200(ctx, response)
 }
 
-func (s *service) Update(id int) (UpdateResponse, error) {
+func (s *Service) Update(id int) (UpdateResponse, error) {
 	task, err := s.repository.Update(id)
 	if err != nil {
 		return UpdateResponse{}, err
@@ -39,13 +39,13 @@ func (s *service) Update(id int) (UpdateResponse, error) {
 	return UpdateResponse{task.UpdatedAt, task.Status}, nil
 }
 
-func (r *repository) Update(id int) (Task, error) {
+func (r *InMemoryRepository) Update(id int) (Task, error) {
 	r.locker.Lock()
 	defer r.locker.Unlock()
 
 	task, ok := r.tasks[id]
 	if !ok {
-		return Task{}, &shared.InvariantViolationError{Message: "task not found"}
+		return Task{}, &internal.InvariantViolationError{Message: "task not found"}
 	}
 
 	err := task.Update(time.Now())

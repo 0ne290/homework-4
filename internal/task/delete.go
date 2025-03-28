@@ -2,7 +2,7 @@ package task
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"homework-4/internal/shared"
+	"homework-4/internal"
 )
 
 type DeleteResponse struct {
@@ -24,10 +24,10 @@ func (c *Controller) Delete(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return shared.Create200(ctx, response)
+	return internal.Create200(ctx, response)
 }
 
-func (s *service) Delete(id int) (DeleteResponse, error) {
+func (s *Service) Delete(id int) (DeleteResponse, error) {
 	err := s.repository.Delete(id)
 	if err != nil {
 		return DeleteResponse{}, err
@@ -36,13 +36,13 @@ func (s *service) Delete(id int) (DeleteResponse, error) {
 	return DeleteResponse{"task deleted"}, nil
 }
 
-func (r *repository) Delete(id int) error {
+func (r *InMemoryRepository) Delete(id int) error {
 	r.locker.Lock()
 	defer r.locker.Unlock()
 
 	_, ok := r.tasks[id]
 	if !ok {
-		return &shared.InvariantViolationError{Message: "task not found"}
+		return &internal.InvariantViolationError{Message: "task not found"}
 	}
 
 	delete(r.tasks, id)

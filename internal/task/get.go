@@ -2,7 +2,7 @@ package task
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"homework-4/internal/shared"
+	"homework-4/internal"
 )
 
 type GetAllResponse struct {
@@ -22,10 +22,10 @@ func (c *Controller) GetAll(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return shared.Create200(ctx, response)
+	return internal.Create200(ctx, response)
 }
 
-func (s *service) GetAll() (GetAllResponse, error) {
+func (s *Service) GetAll() (GetAllResponse, error) {
 	tasks, err := s.repository.GetAll()
 	if err != nil {
 		return GetAllResponse{}, err
@@ -34,7 +34,7 @@ func (s *service) GetAll() (GetAllResponse, error) {
 	return GetAllResponse{tasks}, nil
 }
 
-func (r *repository) GetAll() ([]Task, error) {
+func (r *InMemoryRepository) GetAll() ([]Task, error) {
 	r.locker.RLock()
 	defer r.locker.RUnlock()
 
@@ -66,10 +66,10 @@ func (c *Controller) GetById(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return shared.Create200(ctx, response)
+	return internal.Create200(ctx, response)
 }
 
-func (s *service) GetById(id int) (GetByIdResponse, error) {
+func (s *Service) GetById(id int) (GetByIdResponse, error) {
 	task, err := s.repository.GetById(id)
 	if err != nil {
 		return GetByIdResponse{}, err
@@ -78,13 +78,13 @@ func (s *service) GetById(id int) (GetByIdResponse, error) {
 	return GetByIdResponse{task}, nil
 }
 
-func (r *repository) GetById(id int) (Task, error) {
+func (r *InMemoryRepository) GetById(id int) (Task, error) {
 	r.locker.RLock()
 	defer r.locker.RUnlock()
 
 	task, ok := r.tasks[id]
 	if !ok {
-		return Task{}, &shared.InvariantViolationError{Message: "task not found"}
+		return Task{}, &internal.InvariantViolationError{Message: "task not found"}
 	}
 
 	return task, nil

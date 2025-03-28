@@ -1,8 +1,9 @@
 package task
 
 import (
+	"context"
 	"github.com/gofiber/fiber/v2"
-	"homework-4/internal/shared"
+	"homework-4/internal"
 	"time"
 )
 
@@ -35,11 +36,23 @@ func (c *Controller) Create(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return shared.Create200(ctx, response)
+	return internal.Create200(ctx, response)
 }
 
-func (s *service) Create(request *CreateRequest) (CreateResponse, error) {
-	task, err := s.repository.Create(request)
+func (s *Service) Create(ctx context.Context, request *CreateRequest) (CreateResponse, error) {
+	repository, err := s.unitOfWork.Begin(ctx)
+	if err != nil {
+		return CreateResponse{}, err
+	}
+
+	task, err := repository.Create(request)
+	if err != nil {
+		s.unitOfWork.Rollback(ctx, repository)
+
+		return CreateResponse{}, err
+	}
+
+	err = s.unitOfWork.Save(ctx, repository)
 	if err != nil {
 		return CreateResponse{}, err
 	}
@@ -47,7 +60,18 @@ func (s *service) Create(request *CreateRequest) (CreateResponse, error) {
 	return CreateResponse{task.Id}, nil
 }
 
-func (r *repository) Create(request *CreateRequest) (Task, error) {
+func (r *InMemoryRepository) Create(request *CreateRequest) (Task, error) {
+	r.locker.Lock()
+	defer r.locker.Unlock()
+
+	task := Task{r.idCounter, request.Title, request.Description, New, time.Now(), time.Now()}
+	r.tasks[r.idCounter] = task
+	r.idCounter++
+
+	return task, nil
+}
+
+func (r *PosgresRepository) Create(request *CreateRequest) (Task, error) {
 	r.locker.Lock()
 	defer r.locker.Unlock()
 

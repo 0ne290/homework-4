@@ -1,6 +1,9 @@
 package task
 
-import "sync"
+import (
+	"github.com/jackc/pgx/v5"
+	"sync"
+)
 
 type Repository interface {
 	Create(request *CreateRequest) (Task, error)
@@ -10,12 +13,20 @@ type Repository interface {
 	Delete(id int) error
 }
 
-type repository struct {
+type InMemoryRepository struct {
 	tasks     map[int]Task
 	idCounter int
 	locker    sync.RWMutex
 }
 
-func NewRepository(tasks map[int]Task) Repository {
-	return &repository{tasks: tasks, idCounter: 0}
+type PosgresRepository struct {
+	transaction pgx.Tx
+}
+
+func newPosgresRepository(transaction pgx.Tx) *PosgresRepository {
+	return &PosgresRepository{transaction}
+}
+
+func NewInMemoryRepository(tasks map[int]Task) *InMemoryRepository {
+	return &InMemoryRepository{tasks: tasks, idCounter: 0}
 }

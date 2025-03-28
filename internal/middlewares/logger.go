@@ -5,7 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"homework-4/internal/shared"
+	"homework-4/internal"
 )
 
 func Logging(logger *zap.SugaredLogger) fiber.Handler {
@@ -17,13 +17,13 @@ func Logging(logger *zap.SugaredLogger) fiber.Handler {
 
 		ret := ctx.Next()
 		if ret != nil {
-			if errors.As(ret, &shared.NilOfInvariantViolationError) {
-				ret = shared.Create400(ctx, &shared.Error400{Message: ret.Error()})
+			if errors.As(ret, &internal.NilOfInvariantViolationError) {
+				ret = internal.Create400(ctx, &internal.Error400{Message: ret.Error()})
 
 				logger.Infow("end", "requestUuid", requestUuid, "statusCode", 400, "responseBody", string(ctx.Response().Body()))
 			} else {
-				error500 := shared.NewError500(requestUrl, requestUuid)
-				ret = shared.Create500(ctx, &error500)
+				error500 := internal.NewError500(requestUrl, requestUuid)
+				ret = internal.Create500(ctx, &error500)
 
 				logger.Errorw("end", "requestUuid", requestUuid, "statusCode", 500, "responseBody", string(ctx.Response().Body()))
 			}

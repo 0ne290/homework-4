@@ -1,6 +1,6 @@
 package task
 
-type Service interface {
+type IService interface {
 	Create(request *CreateRequest) (CreateResponse, error)
 	GetAll() (GetAllResponse, error)
 	GetById(id int) (GetByIdResponse, error)
@@ -8,10 +8,10 @@ type Service interface {
 	Delete(id int) (DeleteResponse, error)
 }
 
-type service struct {
-	repository Repository
+type Service struct {
+	unitOfWork UnitOfWork
 }
 
-func NewService(repository Repository) Service {
-	return &service{repository}
+func NewService(unitOfWork UnitOfWork) *Service {
+	return &Service{unitOfWork}
 }

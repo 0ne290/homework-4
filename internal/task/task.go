@@ -1,7 +1,7 @@
 package task
 
 import (
-	"homework-4/internal/shared"
+	"homework-4/internal"
 	"time"
 )
 
@@ -38,6 +38,6 @@ func (task *Task) Update(updatedAt time.Time) error {
 		return nil
 
 	default:
-		return &shared.InvariantViolationError{Message: "status is invalid"}
+		return &internal.InvariantViolationError{Message: "status is invalid"}
 	}
 }

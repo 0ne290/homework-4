@@ -1,9 +1,9 @@
 package task
 
 type Controller struct {
-	Service Service
+	Service IService
 }
 
-func NewController(service Service) *Controller {
+func NewController(service IService) *Controller {
 	return &Controller{service}
 }
