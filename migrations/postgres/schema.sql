@@ -1,8 +1,8 @@
 CREATE TABLE tasks (
-    id SERIAL PRIMARY KEY,
+    uuid UUID PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT,
-    status TEXT CHECK (status IN ('new', 'in_progress', 'done')) DEFAULT 'new',
-    created_at TIMESTAMP DEFAULT now(),
-    updated_at TIMESTAMP DEFAULT now()
+    status TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
 );

@@ -26,5 +26,5 @@ func Create400(ctx *fiber.Ctx, err *Error400) error {
 }
 
 func Create500(ctx *fiber.Ctx, err *Error500) error {
-	return ctx.Status(fiber.StatusBadRequest).JSON(err)
+	return ctx.Status(fiber.StatusInternalServerError).JSON(err)
 }

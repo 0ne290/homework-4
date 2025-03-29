@@ -19,8 +19,8 @@ func NewController(service Service) *Controller {
 // @Produce json
 // @Param createRequest body CreateRequest true "CreateRequest"
 // @Success 200 {object} CreateResponse
-// @Failure 400 {object} shared.Error400
-// @Failure 500 {object} shared.Error500
+// @Failure 400 {object} internal.Error400
+// @Failure 500 {object} internal.Error500
 // @Router /v1/tasks [post]
 func (c *Controller) Create(ctx *fiber.Ctx) error {
 	request := &CreateRequest{}
@@ -41,8 +41,8 @@ func (c *Controller) Create(ctx *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Success 200 {object} GetAllResponse
-// @Failure 400 {object} shared.Error400
-// @Failure 500 {object} shared.Error500
+// @Failure 400 {object} internal.Error400
+// @Failure 500 {object} internal.Error500
 // @Router /v1/tasks [get]
 func (c *Controller) GetAll(ctx *fiber.Ctx) error {
 	response, err := c.service.GetAll(ctx.Context())
