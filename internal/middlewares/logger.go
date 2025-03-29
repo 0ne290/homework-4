@@ -23,9 +23,11 @@ func Logging(logger *zap.SugaredLogger) fiber.Handler {
 				logger.Infow("end", "requestUuid", requestUuid, "statusCode", 400, "responseBody", string(ctx.Response().Body()))
 			} else {
 				error500 := internal.NewError500(requestUrl, requestUuid)
-				ret = internal.Create500(ctx, &error500)
+				err := internal.Create500(ctx, &error500)
 
-				logger.Errorw("end", "requestUuid", requestUuid, "statusCode", 500, "responseBody", string(ctx.Response().Body()))
+				logger.Errorw("end", "requestUuid", requestUuid, "statusCode", 500, "responseBody", string(ctx.Response().Body()), "error", ret)
+
+				ret = err
 			}
 		} else {
 			logger.Infow("end", "requestUuid", requestUuid, "statusCode", 200, "responseBody", string(ctx.Response().Body()))

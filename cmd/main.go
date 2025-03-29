@@ -9,7 +9,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	_ "homework-4/docs"
@@ -30,17 +29,25 @@ import (
 func main() {
 	var cfg internal.AppConfig
 	if err := envconfig.Process("", &cfg); err != nil {
-		log.Fatal(errors.Wrap(err, "failed to load configuration"))
+		log.Fatal(err)
 	}
 
 	logger, err := NewLogger(cfg.LogLevel)
 	if err != nil {
-		log.Fatal(errors.Wrap(err, "error initializing logger"))
+		log.Fatal(err)
 	}
 
-	repository := task.NewInMemoryRepository(make(map[int]task.Task, 256))
+	pool, err := NewPostgresConnectionPool(context.Background(), cfg.PostgreSQL)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	service := task.NewService(repository)
+	unitOfWork := task.NewPostgresUnitOfWork(pool)
+
+	timeProvider := internal.NewRealTimeProvider()
+	uuidProvider := internal.NewRealUuidProvider()
+
+	service := task.NewRealService(unitOfWork, timeProvider, uuidProvider)
 
 	controller := task.NewController(service)
 
@@ -49,8 +56,8 @@ func main() {
 	// Запуск HTTP-сервера в отдельной горутине
 	go func() {
 		logger.Infof("Starting server on %s", cfg.Rest.ListenAddress)
-		if err := app.Listen(cfg.Rest.ListenAddress); err != nil {
-			log.Fatal(errors.Wrap(err, "failed to start server"))
+		if err = app.Listen(cfg.Rest.ListenAddress); err != nil {
+			log.Fatal(err)
 		}
 	}()
 
@@ -65,7 +72,7 @@ func main() {
 func NewLogger(level string) (*zap.SugaredLogger, error) {
 	logLevel, err := zap.ParseAtomicLevel(level)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error ParseAtomicLevel %s", level)
+		return nil, err
 	}
 
 	logger, err := zap.Config{
@@ -80,7 +87,7 @@ func NewLogger(level string) (*zap.SugaredLogger, error) {
 		DisableStacktrace: true,
 	}.Build()
 	if err != nil {
-		return nil, errors.Wrap(err, "error logConfig.Build")
+		return nil, err
 	}
 
 	return logger.Sugar(), nil
@@ -105,7 +112,7 @@ func NewPostgresConnectionPool(ctx context.Context, cfg internal.PostgreSQL) (*p
 	// Парсим конфигурацию подключения
 	config, err := pgxpool.ParseConfig(connString)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse PostgreSQL config")
+		return nil, err
 	}
 
 	// Оптимизация выполнения запросов (кеширование запросов)
@@ -114,7 +121,7 @@ func NewPostgresConnectionPool(ctx context.Context, cfg internal.PostgreSQL) (*p
 	// Создаём пул соединений с базой данных
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create PostgreSQL connection pool")
+		return nil, err
 	}
 
 	return pool, nil
@@ -139,9 +146,9 @@ func BuildRouting(allowOrigins string, controller *task.Controller, logger *zap.
 
 	taskApiGroup.Post("", middlewares.Logging(logger), controller.Create)
 	taskApiGroup.Get("", middlewares.Logging(logger), controller.GetAll)
-	taskApiGroup.Get("/:id<int>", middlewares.Logging(logger), controller.GetById)
-	taskApiGroup.Put("/:id<int>", middlewares.Logging(logger), controller.Update)
-	taskApiGroup.Delete("/:id<int>", middlewares.Logging(logger), controller.Delete)
+	taskApiGroup.Get("/:uuid<guid>", middlewares.Logging(logger), controller.GetByUuid)
+	taskApiGroup.Put("/:uuid<guid>", middlewares.Logging(logger), controller.Update)
+	taskApiGroup.Delete("/:uuid<guid>", middlewares.Logging(logger), controller.Delete)
 
 	return app
 }

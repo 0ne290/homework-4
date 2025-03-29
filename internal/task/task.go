@@ -1,6 +1,7 @@
 package task
 
 import (
+	"github.com/google/uuid"
 	"homework-4/internal"
 	"time"
 )
@@ -8,13 +9,13 @@ import (
 type Status string
 
 const (
-	New        Status = "new"
-	InProgress Status = "in_progress"
-	Done       Status = "done"
+	statusNew        Status = "new"
+	statusInProgress Status = "in_progress"
+	statusDone       Status = "done"
 )
 
 type Task struct {
-	Id          int       `json:"id"`
+	Uuid        uuid.UUID `json:"uuid"`
 	Title       string    `json:"title"`
 	Description *string   `json:"description"`
 	Status      Status    `json:"status"`
@@ -22,17 +23,21 @@ type Task struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
+func newTask(uuid uuid.UUID, title string, description *string, createdAt time.Time, updatedAt time.Time) *Task {
+	return &Task{uuid, title, description, statusNew, createdAt, updatedAt}
+}
+
 func (task *Task) Update(updatedAt time.Time) error {
 	switch task.Status {
 
-	case New:
-		task.Status = InProgress
+	case statusNew:
+		task.Status = statusInProgress
 		task.UpdatedAt = updatedAt
 
 		return nil
 
-	case InProgress:
-		task.Status = Done
+	case statusInProgress:
+		task.Status = statusDone
 		task.UpdatedAt = updatedAt
 
 		return nil

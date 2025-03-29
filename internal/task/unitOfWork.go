@@ -3,7 +3,6 @@ package task
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/pkg/errors"
 )
 
 type UnitOfWork interface {
@@ -12,27 +11,27 @@ type UnitOfWork interface {
 	Rollback(ctx context.Context, repository Repository) error
 }
 
-type postgresUnitOfWork struct {
+type PostgresUnitOfWork struct {
 	pool *pgxpool.Pool
 }
 
-func NewPostgresUnitOfWork(pool *pgxpool.Pool) (*postgresUnitOfWork, error) {
-	return &postgresUnitOfWork{pool}, nil
+func NewPostgresUnitOfWork(pool *pgxpool.Pool) *PostgresUnitOfWork {
+	return &PostgresUnitOfWork{pool}
 }
 
-func (uow *postgresUnitOfWork) Begin(ctx context.Context) (*PosgresRepository, error) {
+func (uow *PostgresUnitOfWork) Begin(ctx context.Context) (Repository, error) {
 	transaction, err := uow.pool.Begin(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to begin PostgreSQL transaction")
+		return nil, err
 	}
 
 	return newPosgresRepository(transaction), nil
 }
 
-func (_ *postgresUnitOfWork) Save(ctx context.Context, repository *PosgresRepository) error {
-	return repository.transaction.Commit(ctx)
+func (*PostgresUnitOfWork) Save(ctx context.Context, repository Repository) error {
+	return repository.save(ctx)
 }
 
-func (uow *postgresUnitOfWork) Rollback(ctx context.Context, repository *PosgresRepository) error {
-	return repository.transaction.Rollback(ctx)
+func (*PostgresUnitOfWork) Rollback(ctx context.Context, repository Repository) error {
+	return repository.rollback(ctx)
 }
